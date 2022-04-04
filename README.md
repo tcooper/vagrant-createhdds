@@ -198,6 +198,16 @@ The VirtualBox guest is now running and ready to run `createhdds`.
 
 ```
 [vagrant@createhdds ~]$ cd /vagrant/factory/hdds/fixed
+
+[vagrant@createhdds fixed]$ /vagrant/createhdds/createhdds.py check
+Missing images: disk_full_mbr.img, disk_full_gpt.img, disk_freespace_mbr.img, disk_freespace_gpt.img, disk_ks.img, disk_updates_img.img, disk_shrink_ext4.img, disk_shrink_ntfs.img, disk_rocky8.5_minimal_x86_64.qcow2, disk_rocky8.5_minimal-uefi_x86_64.qcow2, disk_rocky8.5_desktop_x86_64.qcow2, disk_rocky8.5_desktopencrypt_x86_64.qcow2, disk_rocky8.5_server_x86_64.qcow2, disk_rocky8.5_support_x86_64.qcow2
+```
+
+### Build sample disk image
+
+**NOTE: Disk images are mostly empty containers with only disk partitioning applied.**
+
+```
 [vagrant@createhdds fixed]$ /vagrant/createhdds/createhdds.py -l info ks
 INFO:createhdds:Creating image disk_ks.img...[1/1]
 ```
@@ -205,49 +215,14 @@ INFO:createhdds:Creating image disk_ks.img...[1/1]
 ### Inspect image
 
 ```
-[vagrant@createhdds fixed]$ ls -l disk_ks.img
--rw-r--r--. 1 vagrant vagrant 104857600 Apr  3 21:19 disk_ks.img
+[vagrant@createhdds fixed]$ ls -lh disk_ks.img
+-rw-r--r--. 1 vagrant vagrant 100M Apr  4 04:46 disk_ks.img
 
 [vagrant@createhdds fixed]$ qemu-img info disk_ks.img
 image: disk_ks.img
 file format: raw
 virtual size: 100 MiB (104857600 bytes)
 disk size: 74.1 MiB
-```
-
----
-
-### Repeat for any/all _empty_ images required
-
-#### Full images...
-
-```
-[vagrant@createhdds fixed]$ /vagrant/createhdds/createhdds.py -l info full
-INFO:createhdds:Creating image disk_full_mbr.img...[1/2]
-INFO:createhdds:Creating image disk_full_gpt.img...[2/2]
-```
-
-#### Freespace images...
-
-```
-[vagrant@createhdds fixed]$ /vagrant/createhdds/createhdds.py -l info freespace
-INFO:createhdds:Creating image disk_freespace_mbr.img...[1/2]
-INFO:createhdds:Creating image disk_freespace_gpt.img...[2/2]
-```
-
-#### Shrink images...
-
-```
-[vagrant@createhdds fixed]$ /vagrant/createhdds/createhdds.py -l info shrink
-INFO:createhdds:Creating image disk_shrink_ext4.img...[1/2]
-INFO:createhdds:Creating image disk_shrink_ntfs.img...[2/2]
-```
-
-#### Updates images
-
-```
-[vagrant@createhdds fixed]$ /vagrant/createhdds/createhdds.py -l info updates_img
-INFO:createhdds:Creating image disk_updates_img.img...[1/1]
 ```
 
 ---
@@ -259,6 +234,8 @@ INFO:createhdds:Creating image disk_updates_img.img...[1/1]
 #### Support Server image
 
 ##### Generate qcow2 image
+
+**NOTE: More portions of this build will be shown to give a sense of what the output should be. Content, where removed, is indicated with `...<snip>...`.**
 
 ```
 [vagrant@createhdds fixed]$ /vagrant/createhdds/createhdds.py -t -l debug support
@@ -431,9 +408,14 @@ INFO:createhdds:Won't create aarch64 image on x86_64 host. This is normal, don't
 
 ##### Validate qcow2 image
 
+**NOTE: The image size and disk usage are not the same.**
+
 ```
 [vagrant@createhdds fixed]$ ls -lh disk_rocky8.5_support_x86_64.qcow2
 -rw-r--r--. 1 vagrant vagrant 12G Apr  4 00:06 disk_rocky8.5_support_x86_64.qcow2
+
+[vagrant@createhdds fixed]$ du -sh disk_rocky8.5_support_x86_64.qcow2
+2.3G	disk_rocky8.5_support_x86_64.qcow2
 
 [vagrant@createhdds fixed]$ qemu-img info disk_rocky8.5_support_x86_64.qcow2
 image: disk_rocky8.5_support_x86_64.qcow2
@@ -461,39 +443,9 @@ DEBUG:createhdds:Using kickstart server.ks
 INFO:createhdds:Install starting...
 DEBUG:createhdds:Command: virt-install --disk size=7,path=disk_rocky8.5_server_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/server.ks --initrd-inject /home/rocky/createhdds/server.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --graphics none --extra-args console=ttyS0 --network user
 [Thu, 31 Mar 2022 18:48:10 virt-install 31016] DEBUG (cli:204) Launched with command line: /usr/bin/virt-install --disk size=7,path=disk_rocky8.5_server_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/server.ks --initrd-inject /home/rocky/createhdds/server.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --graphics none --extra-args console=ttyS0 --network user
-[Thu, 31 Mar 2022 18:48:10 virt-install 31016] DEBUG (virtinstall:212) Distilled --network options: ['user']
-[Thu, 31 Mar 2022 18:48:10 virt-install 31016] DEBUG (virtinstall:144) Distilled --disk options: ['size=7,path=disk_rocky8.5_server_x86_64.qcow2.tmp']
-[Thu, 31 Mar 2022 18:48:10 virt-install 31016] DEBUG (cli:216) Requesting libvirt URI default
-[Thu, 31 Mar 2022 18:48:10 virt-install 31016] DEBUG (cli:219) Received libvirt URI qemu:///session
-[Thu, 31 Mar 2022 18:48:10 virt-install 31016] DEBUG (diskbackend:161) Attempting to build pool=fixed target=/var/lib/openqa/factory/hdds/fixed
-[Thu, 31 Mar 2022 18:48:10 virt-install 31016] DEBUG (storage:380) Creating storage pool 'fixed' with xml:
-<pool type="dir">
-  <name>fixed</name>
-  <target>
-    <path>/var/lib/openqa/factory/hdds/fixed</path>
-  </target>
-</pool>
 
 ...<snip>...
 
-[  OK  ] Stopped Create System Users.
-[  OK  ] Stopped Remount Root and Kernel File Systems.
-[  OK  ] Stopped Device-Mapper Multipath Device Controller.
-[  OK  ] Reached target Shutdown.
-[  OK  ] Reached target Final Step.
-         Starting Power-Off...
-dracut Warning: Killing all remaining processes
-Powering off.
-[ 2614.035701] reboot: Power down
-
-[Thu, 31 Mar 2022 19:35:31 virt-install 31016] DEBUG (cli:265) Domain has shutdown. Continuing.
-Domain has shutdown. Continuing.
-[Thu, 31 Mar 2022 19:35:31 virt-install 31016] DEBUG (cli:265) Domain creation completed.
-Domain creation completed.
-[Thu, 31 Mar 2022 19:35:31 virt-install 31016] DEBUG (cli:265) You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
-You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
 INFO:createhdds:Creating image disk_rocky8.5_server_aarch64.qcow2...[2/2]
 INFO:createhdds:Won't create aarch64 image on x86_64 host. This is normal, don't worry. If you intend to have aarch64 workers you will need to run createhdds again on one of them to create their base images
 ```
@@ -532,50 +484,9 @@ DEBUG:createhdds:Using kickstart minimal.ks
 INFO:createhdds:Install starting...
 DEBUG:createhdds:Command: virt-install --disk size=10,path=disk_rocky8.5_minimal_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/minimal.ks --initrd-inject /home/rocky/createhdds/minimal.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --graphics none --extra-args console=ttyS0 --network user
 [Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (cli:204) Launched with command line: /usr/bin/virt-install --disk size=10,path=disk_rocky8.5_minimal_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/minimal.ks --initrd-inject /home/rocky/createhdds/minimal.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --graphics none --extra-args console=ttyS0 --network user
-[Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (virtinstall:212) Distilled --network options: ['user']
-[Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (virtinstall:144) Distilled --disk options: ['size=10,path=disk_rocky8.5_minimal_x86_64.qcow2.tmp']
-[Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (cli:216) Requesting libvirt URI default
-[Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (cli:219) Received libvirt URI qemu:///session
-[Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (storage:209) refreshing pool=fixed
-[Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (disk:363) Creating volume 'disk_rocky8.5_minimal_x86_64.qcow2.tmp' on pool 'fixed'
-[Thu, 31 Mar 2022 20:14:44 virt-install 32408] DEBUG (disk:654) disk.set_vol_install: name=disk_rocky8.5_minimal_x86_64.qcow2.tmp poolxml=
-<pool type='dir'>
-  <name>fixed</name>
-  <uuid>c30154ec-c4a3-457a-9189-c02ad607d000</uuid>
-  <capacity unit='bytes'>136734621696</capacity>
-  <allocation unit='bytes'>4836704256</allocation>
-  <available unit='bytes'>131897917440</available>
-  <source>
-  </source>
-  <target>
-    <path>/var/lib/openqa/factory/hdds/fixed</path>
-    <permissions>
-      <mode>0775</mode>
-      <owner>0</owner>
-      <group>10</group>
-      <label>unconfined_u:object_r:var_lib_t:s0</label>
-    </permissions>
-  </target>
-</pool>
 
 ...<snip>...
 
-[  OK  ] Stopped Device-Mapper Multipath Device Controller.
-[  OK  ] Reached target Shutdown.
-[  OK  ] Reached target Final Step.
-         Starting Power-Off...
-dracut Warning: Killing all remaining processes
-Powering off.
-[ 1937.666676] reboot: Power down
-
-[Thu, 31 Mar 2022 20:49:56 virt-install 32408] DEBUG (cli:265) Domain has shutdown. Continuing.
-Domain has shutdown. Continuing.
-[Thu, 31 Mar 2022 20:49:56 virt-install 32408] DEBUG (cli:265) Domain creation completed.
-Domain creation completed.
-[Thu, 31 Mar 2022 20:49:56 virt-install 32408] DEBUG (cli:265) You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
-You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
 INFO:createhdds:Creating image disk_rocky8.5_minimal_aarch64.qcow2...[2/2]
 INFO:createhdds:Won't create aarch64 image on x86_64 host. This is normal, don't worry. If you intend to have aarch64 workers you will need to run createhdds again on one of them to create their base images
 ```
@@ -613,39 +524,9 @@ DEBUG:createhdds:Using kickstart desktop.ks
 INFO:createhdds:Install starting...
 DEBUG:createhdds:Command: virt-install --disk size=20,path=disk_rocky8.5_desktop_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/desktop.ks --initrd-inject /vagrant/createhdds/desktop.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --graphics none --extra-args console=ttyS0 --network user
 [Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (cli:208) Launched with command line: /usr/share/virt-manager/virt-install --disk size=20,path=disk_rocky8.5_desktop_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/desktop.ks --initrd-inject /vagrant/createhdds/desktop.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --graphics none --extra-args console=ttyS0 --network user
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (virt-install:207) Distilled --network options: ['user']
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (virt-install:139) Distilled --disk options: ['size=20,path=disk_rocky8.5_desktop_x86_64.qcow2.tmp']
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (cli:224) Requesting libvirt URI default
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (cli:227) Received libvirt URI qemu:///session
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (storage:208) refreshing pool=fixed
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (disk:225) Creating volume 'disk_rocky8.5_desktop_x86_64.qcow2.tmp' on pool 'fixed'
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] DEBUG (disk:359) disk.set_vol_install: name=disk_rocky8.5_desktop_x86_64.qcow2.tmp poolxml=
-<pool type='dir'>
-  <name>fixed</name>
-  <uuid>d3c682aa-76ae-461e-bc84-46583abb834d</uuid>
-  <capacity unit='bytes'>2121073168384</capacity>
-  <allocation unit='bytes'>770910179328</allocation>
-  <available unit='bytes'>1350162989056</available>
-  <source>
-  </source>
-  <target>
-    <path>/vagrant/factory/hdds/fixed</path>
-    <permissions>
-      <mode>0755</mode>
-      <owner>5000</owner>
-      <group>5000</group>
-      <label>system_u:object_r:vmblock_t:s0</label>
-    </permissions>
-  </target>
-</pool>
-
-[Mon, 04 Apr 2022 00:17:50 virt-install 17569] WARNING (guest:700) KVM acceleration not available, using 'qemu'
-[Mon, 04 Apr 2022 00:17:51 virt-install 17569] DEBUG (guest:463) Setting Guest osinfo name <_OsVariant name=generic>
 
 ...<snip>...
 
-You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
 INFO:createhdds:Creating image disk_rocky8.5_desktop_aarch64.qcow2...[2/2]
 INFO:createhdds:Won't create aarch64 image on x86_64 host. This is normal, don't worry. If you intend to have aarch64 workers you will need to run createhdds again on one of them to create their base images
 ```
@@ -684,20 +565,6 @@ DEBUG:createhdds:Command: virt-install --disk size=20,path=disk_rocky8.5_desktop
 
 ...<snip>...
 
-[  OK  ] Reached target Final Step.
-         Starting Power-Off...
-dracut Warning: Killing all remaining processes
-Powering off.
-[ 4936.707565] reboot: Power down
-
-[Mon, 04 Apr 2022 03:30:16 virt-install 32319] DEBUG (cli:272) Domain has shutdown. Continuing.
-Domain has shutdown. Continuing.
-[Mon, 04 Apr 2022 03:30:16 virt-install 32319] DEBUG (cli:272) Domain creation completed.
-Domain creation completed.
-[Mon, 04 Apr 2022 03:30:16 virt-install 32319] DEBUG (cli:272) You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
-You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
 INFO:createhdds:Creating image disk_rocky8.5_desktopencrypt_aarch64.qcow2...[2/2]
 INFO:createhdds:Won't create aarch64 image on x86_64 host. This is normal, don't worry. If you intend to have aarch64 workers you will need to run createhdds again on one of them to create their base images
 ```
@@ -733,25 +600,9 @@ DEBUG:createhdds:Using kickstart minimal-uefi.ks
 INFO:createhdds:Install starting...
 DEBUG:createhdds:Command: virt-install --disk size=10,path=disk_rocky8.5_minimal-uefi_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/minimal-uefi.ks --initrd-inject /vagrant/createhdds/minimal-uefi.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --boot uefi --graphics none --extra-args console=ttyS0 --network user
 [Mon, 04 Apr 2022 03:56:49 virt-install 46697] DEBUG (cli:208) Launched with command line: /usr/share/virt-manager/virt-install --disk size=10,path=disk_rocky8.5_minimal-uefi_x86_64.qcow2.tmp --os-variant rocky8.5 -x inst.ks=file:/minimal-uefi.ks --initrd-inject /vagrant/createhdds/minimal-uefi.ks --location https://download.rockylinux.org/pub/rocky/8.5/BaseOS/x86_64/os --name createhdds --memory 3072 --noreboot --wait -1 --debug --boot uefi --graphics none --extra-args console=ttyS0 --network user
-[Mon, 04 Apr 2022 03:56:49 virt-install 46697] DEBUG (virt-install:207) Distilled --network options: ['user']
-[Mon, 04 Apr 2022 03:56:49 virt-install 46697] DEBUG (virt-install:139) Distilled --disk options: ['size=10,path=disk_rocky8.5_minimal-uefi_x86_64.qcow2.tmp']
 
 ...<snip>...
 
-[  OK  ] Reached target Final Step.
-         Starting Power-Off...
-dracut Warning: Killing all remaining processes
-Powering off.
-[ 2130.092749] reboot: Power down
-
-[Mon, 04 Apr 2022 04:32:31 virt-install 46697] DEBUG (cli:272) Domain has shutdown. Continuing.
-Domain has shutdown. Continuing.
-[Mon, 04 Apr 2022 04:32:31 virt-install 46697] DEBUG (cli:272) Domain creation completed.
-Domain creation completed.
-[Mon, 04 Apr 2022 04:32:31 virt-install 46697] DEBUG (cli:272) You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
-You can restart your domain by running:
-  virsh --connect qemu:///session start createhdds
 INFO:createhdds:Creating image disk_rocky8.5_minimal-uefi_aarch64.qcow2...[2/2]
 INFO:createhdds:Won't create aarch64 image on x86_64 host. This is normal, don't worry. If you intend to have aarch64 workers you will need to run createhdds again on one of them to create their base images
 ```
